@@ -1,0 +1,19 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer>
+  <p class="muted">
+    © {year} Joshua Phelps · <a href="/rss.xml">RSS</a> · <a href="/colophon">Colophon</a>
+  </p>
+</footer>
+
+<style>
+  footer {
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-3);
+    border-top: 1px solid var(--border);
+    font-size: 0.875rem;
+  }
+</style>

@@ -1,0 +1,106 @@
+/* Placeholder design. Everything visual flows from these tokens,
+   so the real design pass is mostly a rewrite of this block. */
+:root {
+  --bg: #fbfaf7;
+  --fg: #1c1b19;
+  --muted: #6b6860;
+  --accent: #c2410c;
+  --border: #e4e1da;
+  --surface: #f2f0ea;
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 1rem;
+  --space-4: 1.5rem;
+  --space-5: 2.5rem;
+  --space-6: 4rem;
+
+  --measure: 42rem;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141412;
+    --fg: #ecebe6;
+    --muted: #9a978e;
+    --accent: #fb923c;
+    --border: #2c2b28;
+    --surface: #1d1c1a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-3) var(--space-6);
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+pre {
+  background: var(--surface);
+  padding: var(--space-3);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list > li {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}

@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import { formatDate } from '../lib/content';
+
+const updated = new Date('2026-10-16');
+---
+
+<Base title="Now" description="What I'm focused on right now.">
+  <h1>Now</h1>
+  <p class="muted">Updated {formatDate(updated)}. Inspired by <a href="https://nownownow.com/about">nownownow.com</a>.</p>
+
+  <ul>
+    <li>Prepping for applied AI roles: ML fundamentals, system design, and evals.</li>
+    <li>Building this site, one questionable feature at a time.</li>
+    <li>Thinking about how to measure soccer decision-making with event data.</li>
+  </ul>
+</Base>

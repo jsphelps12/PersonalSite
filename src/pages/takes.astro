@@ -1,0 +1,13 @@
+---
+import Base from '../layouts/Base.astro';
+import Take from '../components/Take.astro';
+import { getTakes } from '../lib/content';
+
+const takes = await getTakes();
+---
+
+<Base title="Takes" description="Short thoughts on soccer, tech, and everything else.">
+  <h1>Takes</h1>
+  <p class="muted">Short, fast, occasionally wrong. The predictions get scored.</p>
+  {takes.map((take) => <Take take={take} />)}
+</Base>

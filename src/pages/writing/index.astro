@@ -1,0 +1,12 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts } from '../../lib/content';
+
+const posts = await getPosts();
+---
+
+<Base title="Writing" description="Essays on applied AI, soccer analysis, and trip reports.">
+  <h1>Writing</h1>
+  <PostList posts={posts} />
+</Base>

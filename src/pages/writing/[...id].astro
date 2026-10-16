@@ -1,0 +1,57 @@
+---
+import { render, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getPosts, formatDate } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+interface Props {
+  post: CollectionEntry<'posts'>;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+const { trip } = post.data;
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article>
+    <span class="tag">{post.data.category}</span>
+    <h1>{post.data.title}</h1>
+    <p class="muted">{formatDate(post.data.date)}</p>
+    {
+      trip && (
+        <dl class="trip">
+          <div><dt>Where</dt><dd>{trip.location}</dd></div>
+          {trip.summitFt && <div><dt>Summit</dt><dd>{trip.summitFt.toLocaleString()} ft</dd></div>}
+          {trip.gainFt && <div><dt>Gain</dt><dd>{trip.gainFt.toLocaleString()} ft</dd></div>}
+          {trip.miles && <div><dt>Distance</dt><dd>{trip.miles} mi</dd></div>}
+        </dl>
+      )
+    }
+    <Content />
+  </article>
+</Base>
+
+<style>
+  .trip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding: var(--space-3);
+    background: var(--surface);
+    border-radius: 6px;
+  }
+  .trip dt {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .trip dd {
+    margin: 0;
+    font-weight: 600;
+  }
+</style>

@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import Take from '../components/Take.astro';
+import { getPosts, getTakes } from '../lib/content';
+
+const analysis = (await getPosts()).filter((p) => p.data.category === 'sports');
+const takes = (await getTakes()).filter((t) => t.data.tags.includes('sports'));
+---
+
+<Base title="Sports" description="Soccer analysis, hot takes, and predictions I'll be held to.">
+  <h1>Sports</h1>
+  <p class="muted">Mostly soccer. Analysis when I've done the work, takes when I haven't.</p>
+
+  <h2>Analysis</h2>
+  <PostList posts={analysis} />
+
+  <h2>Takes</h2>
+  {takes.length ? takes.map((take) => <Take take={take} />) : <p class="muted">No takes yet.</p>}
+</Base>
+
+<style>
+  h2 {
+    margin-top: var(--space-5);
+  }
+</style>

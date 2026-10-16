@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import Take from '../components/Take.astro';
+import { getPosts, getTakes } from '../lib/content';
+
+const posts = (await getPosts()).slice(0, 5);
+const takes = (await getTakes()).slice(0, 3);
+---
+
+<Base>
+  <section class="intro">
+    <h1>Hi, I'm Josh.</h1>
+    <p>
+      I build things with applied AI, have too many opinions about soccer, and occasionally climb
+      mountains. This is where I write it all down.
+    </p>
+    <p class="muted">Currently: <a href="/now">see /now</a>.</p>
+  </section>
+
+  <section>
+    <h2>Latest writing</h2>
+    <PostList posts={posts} />
+  </section>
+
+  <section>
+    <h2>Recent takes</h2>
+    {takes.map((take) => <Take take={take} />)}
+    <p><a href="/takes">All takes →</a></p>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    margin-bottom: var(--space-5);
+  }
+  section + section {
+    margin-top: var(--space-5);
+  }
+</style>

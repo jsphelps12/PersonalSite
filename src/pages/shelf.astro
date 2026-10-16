@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const items = await getCollection('shelf');
+const order = { 'in-progress': 0, finished: 1, want: 2, abandoned: 3 };
+items.sort((a, b) => order[a.data.status] - order[b.data.status]);
+const stars = (n: number) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+---
+
+<Base title="Shelf" description="Books and films, rated and judged.">
+  <h1>Shelf</h1>
+  <ul class="list">
+    {
+      items.map(({ data }) => (
+        <li>
+          <span class="tag">
+            {data.kind} · {data.status}
+          </span>
+          <h3>{data.title}</h3>
+          <p class="muted">{data.creator}</p>
+          {data.rating !== undefined && <p aria-label={`${data.rating} out of 5`}>{stars(data.rating)}</p>}
+          {data.oneLiner && <p>{data.oneLiner}</p>}
+        </li>
+      ))
+    }
+  </ul>
+</Base>
+
+<style>
+  h3,
+  p {
+    margin: var(--space-1) 0;
+  }
+</style>
