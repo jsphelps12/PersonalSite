@@ -1,5 +1,6 @@
 ---
 import { render, type CollectionEntry } from 'astro:content';
+import ProbabilityStrip from './ProbabilityStrip.astro';
 import { formatDate } from '../lib/content';
 
 interface Props {
@@ -9,43 +10,80 @@ interface Props {
 const { take } = Astro.props;
 const { Content } = await render(take);
 const { prediction } = take.data;
+const outcomeLabel = {
+  pending: 'Pending',
+  right: 'Called it',
+  wrong: 'Wrong',
+  void: 'Void',
+};
 ---
 
-<article>
-  <div class="meta">
-    <time datetime={take.data.date.toISOString()}>{formatDate(take.data.date)}</time>
-    {take.data.tags.map((tag) => <span class="tag">#{tag}</span>)}
-  </div>
-  <Content />
+<article id={take.id} class="take">
+  <header>
+    <time class="label" datetime={take.data.date.toISOString()}>{formatDate(take.data.date)}</time>
+    <span class="tags">{take.data.tags.map((tag) => <span class="label">#{tag}</span>)}</span>
+  </header>
+  <div class="body"><Content /></div>
   {
     prediction && (
-      <aside class="prediction">
-        <strong>Prediction:</strong> {prediction.claim}
-        <div class="muted">
-          {Math.round(prediction.confidence * 100)}% confident · resolves{' '}
-          {formatDate(prediction.resolvesBy)} · {prediction.outcome}
+      <div class="prediction">
+        <div class="pred-head">
+          <span class="label">Prediction</span>
+          <span class:list={['label', 'outcome', prediction.outcome]}>{outcomeLabel[prediction.outcome]}</span>
         </div>
-      </aside>
+        <p class="claim">{prediction.claim}</p>
+        <ProbabilityStrip josh={prediction.confidence} market={prediction.marketProb} />
+        <p class="label resolves">Resolves {formatDate(prediction.resolvesBy)}</p>
+      </div>
     )
   }
 </article>
 
 <style>
-  article {
-    padding: var(--space-3) 0;
-    border-bottom: 1px solid var(--border);
+  .take {
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: var(--space-5);
   }
-  .meta {
+  .take:first-child {
+    padding-top: 0;
+  }
+  .take:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .tags {
     display: flex;
     gap: var(--space-2);
-    font-size: 0.875rem;
-    color: var(--muted);
+  }
+  .body :global(p) {
+    margin: var(--space-2) 0 0;
   }
   .prediction {
-    margin-top: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    border-left: 3px solid var(--accent);
-    background: var(--surface);
-    font-size: 0.95rem;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px dashed var(--line);
+  }
+  .pred-head {
+    display: flex;
+    justify-content: space-between;
+  }
+  .claim {
+    margin: var(--space-1) 0 var(--space-3);
+    font-weight: 600;
+  }
+  .outcome.right {
+    color: var(--r-good);
+  }
+  .outcome.wrong {
+    color: var(--r-low);
+  }
+  .resolves {
+    margin: var(--space-2) 0 0;
   }
 </style>

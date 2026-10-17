@@ -3,17 +3,35 @@ const year = new Date().getFullYear();
 ---
 
 <footer>
-  <p class="muted">
-    © {year} Joshua Phelps · <a href="/rss.xml">RSS</a> · <a href="/colophon">Colophon</a>
+  <p>
+    <span class="caps">© {year} Joshua Phelps</span>
+    <span class="links">
+      <a href="/rss.xml">RSS</a>
+      <a href="/colophon">Colophon</a>
+      <a href="https://github.com/jsphelps12">GitHub</a>
+    </span>
   </p>
 </footer>
 
 <style>
   footer {
-    max-width: var(--measure);
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    transition: background-color 0.6s var(--ease);
+  }
+  p {
+    max-width: var(--wide);
     margin: 0 auto;
-    padding: var(--space-4) var(--space-3);
-    border-top: 1px solid var(--border);
+    padding: var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
     font-size: 0.875rem;
+    color: var(--muted);
+  }
+  .links {
+    display: flex;
+    gap: var(--space-4);
   }
 </style>

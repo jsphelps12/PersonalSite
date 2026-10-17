@@ -18,40 +18,80 @@ const { trip } = post.data;
 ---
 
 <Base title={post.data.title} description={post.data.description}>
-  <article>
-    <span class="tag">{post.data.category}</span>
-    <h1>{post.data.title}</h1>
-    <p class="muted">{formatDate(post.data.date)}</p>
+  <article class="article">
+    <header>
+      <h1 class="page-title">{post.data.title}</h1>
+      <p class="dek">{post.data.description}</p>
+      <p class="label meta">
+        <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time> · Filed under <a
+          href="/writing">{post.data.category}</a
+        >
+      </p>
+    </header>
     {
       trip && (
         <dl class="trip">
-          <div><dt>Where</dt><dd>{trip.location}</dd></div>
-          {trip.summitFt && <div><dt>Summit</dt><dd>{trip.summitFt.toLocaleString()} ft</dd></div>}
-          {trip.gainFt && <div><dt>Gain</dt><dd>{trip.gainFt.toLocaleString()} ft</dd></div>}
-          {trip.miles && <div><dt>Distance</dt><dd>{trip.miles} mi</dd></div>}
+          <div>
+            <dt class="label">Where</dt>
+            <dd>{trip.location}</dd>
+          </div>
+          {trip.summitFt && (
+            <div>
+              <dt class="label">Summit</dt>
+              <dd class="num">{trip.summitFt.toLocaleString()} ft</dd>
+            </div>
+          )}
+          {trip.gainFt && (
+            <div>
+              <dt class="label">Gain</dt>
+              <dd class="num">{trip.gainFt.toLocaleString()} ft</dd>
+            </div>
+          )}
+          {trip.miles && (
+            <div>
+              <dt class="label">Distance</dt>
+              <dd class="num">{trip.miles} mi</dd>
+            </div>
+          )}
         </dl>
       )
     }
-    <Content />
+    <div class="prose">
+      <Content />
+    </div>
   </article>
 </Base>
 
 <style>
+  .article {
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+  .meta a {
+    color: inherit;
+  }
+  .dek {
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin: var(--space-2) 0 var(--space-3);
+  }
+  .meta {
+    margin: 0 0 var(--space-5);
+  }
   .trip {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-4);
-    padding: var(--space-3);
-    background: var(--surface);
-    border-radius: 6px;
-  }
-  .trip dt {
-    font-size: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
+    gap: var(--space-3) var(--space-6);
+    margin: 0 0 var(--space-5);
+    padding: var(--space-4);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--stripe);
+    border-radius: 0 0 var(--radius) var(--radius);
   }
   .trip dd {
-    margin: 0;
-    font-weight: 600;
+    margin: 0.1rem 0 0;
+    font-weight: 700;
+    font-size: 1.125rem;
   }
 </style>

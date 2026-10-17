@@ -1,23 +1,38 @@
 ---
-const links = [
+import PhaseSwitch from './PhaseSwitch.astro';
+
+const tabs = [
+  { href: '/', label: 'Overview' },
   { href: '/writing', label: 'Writing' },
   { href: '/sports', label: 'Sports' },
+  { href: '/takes', label: 'Takes' },
   { href: '/projects', label: 'Projects' },
   { href: '/shelf', label: 'Shelf' },
   { href: '/now', label: 'Now' },
   { href: '/about', label: 'About' },
 ];
-const path = Astro.url.pathname;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
 
-<header>
-  <nav>
-    <a class="name" href="/">Joshua Phelps</a>
+<header class="top">
+  <div class="bar">
+    <a class="crest-link" href="/" aria-label="Joshua Phelps, home">
+      <svg class="crest" viewBox="0 0 32 36" aria-hidden="true">
+        <path d="M16 1 30 6v12c0 8.5-6 14.5-14 17C8 32.5 2 26.5 2 18V6Z" fill="var(--stripe)" />
+        <path d="M16 4.2 27 8.2V18c0 6.8-4.6 11.8-11 14-6.4-2.2-11-7.2-11-14V8.2Z" fill="var(--panel)" />
+        <text x="16" y="22.5" text-anchor="middle" font-size="11" font-weight="800" fill="var(--fg)" font-family="Archivo Variable, sans-serif" style="font-stretch: 72%">JP</text>
+      </svg>
+      <span class="caps who">Joshua Phelps</span>
+    </a>
+    <PhaseSwitch />
+  </div>
+  <nav class="tabs" aria-label="Sections">
     <ul>
       {
-        links.map(({ href, label }) => (
+        tabs.map(({ href, label }) => (
           <li>
-            <a href={href} aria-current={path.startsWith(href) ? 'page' : undefined}>
+            <a href={href} aria-current={isActive(href) ? 'page' : undefined}>
               {label}
             </a>
           </li>
@@ -28,37 +43,80 @@ const path = Astro.url.pathname;
 </header>
 
 <style>
-  header {
-    border-bottom: 1px solid var(--border);
+  .top {
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    transition: background-color 0.6s var(--ease);
   }
-  nav {
-    max-width: var(--measure);
+  .bar {
+    max-width: var(--wide);
     margin: 0 auto;
-    padding: var(--space-3);
+    padding: var(--space-3) var(--space-4) var(--space-2);
     display: flex;
+    justify-content: space-between;
+    align-items: center;
     flex-wrap: wrap;
     gap: var(--space-2) var(--space-4);
-    align-items: baseline;
-    justify-content: space-between;
   }
-  ul {
+  .crest-link {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-3);
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .crest {
+    width: 1.75rem;
+    height: auto;
+  }
+  .who {
+    font-size: 1.05rem;
+    white-space: nowrap;
+  }
+  .tabs {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  /* On narrow screens the strip scrolls; fade the edge so it reads as more. */
+  @media (max-width: 48rem) {
+    .tabs {
+      mask-image: linear-gradient(to right, #000 80%, transparent);
+    }
+    .tabs ul {
+      padding-right: var(--space-6);
+    }
+  }
+  .tabs ul {
+    display: flex;
+    gap: var(--space-1);
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  a {
+  .tabs a {
+    display: block;
+    padding: var(--space-2) var(--space-3) calc(var(--space-2) + 1px);
+    font-stretch: var(--narrow);
+    font-weight: 700;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     color: var(--muted);
     text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 3px solid transparent;
+    transition:
+      color 0.2s var(--ease),
+      border-color 0.2s var(--ease);
   }
-  a:hover,
-  a[aria-current='page'] {
+  .tabs a:hover {
     color: var(--fg);
   }
-  .name {
+  .tabs a[aria-current='page'] {
     color: var(--fg);
-    font-weight: 700;
+    border-bottom-color: var(--stripe);
   }
 </style>

@@ -53,6 +53,7 @@ const projects = defineCollection({
     date: z.coerce.date(),
     status: z.enum(['idea', 'building', 'shipped', 'archived']),
     stack: z.array(z.string()).default([]),
+    tags: z.array(z.string()).default([]),
     repo: z.url().optional(),
     url: z.url().optional(),
     featured: z.boolean().default(false),

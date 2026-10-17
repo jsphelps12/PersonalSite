@@ -1,35 +1,100 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
 
 const items = await getCollection('shelf');
 const order = { 'in-progress': 0, finished: 1, want: 2, abandoned: 3 };
 items.sort((a, b) => order[a.data.status] - order[b.data.status]);
-const stars = (n: number) => '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n));
+const statusLabel = { 'in-progress': 'Reading', finished: 'Finished', want: 'Want', abandoned: 'Abandoned' };
+// Shelf ratings are out of 5; shown on the same 1–20 scale as the profile.
+const toTwenty = (r: number) => Math.round(r * 4);
+const band = (r: number) => (r >= 16 ? 'elite' : r >= 11 ? 'good' : r >= 6 ? 'mid' : 'low');
 ---
 
 <Base title="Shelf" description="Books and films, rated and judged.">
-  <h1>Shelf</h1>
-  <ul class="list">
-    {
-      items.map(({ data }) => (
-        <li>
-          <span class="tag">
-            {data.kind} · {data.status}
-          </span>
-          <h3>{data.title}</h3>
-          <p class="muted">{data.creator}</p>
-          {data.rating !== undefined && <p aria-label={`${data.rating} out of 5`}>{stars(data.rating)}</p>}
-          {data.oneLiner && <p>{data.oneLiner}</p>}
-        </li>
-      ))
-    }
-  </ul>
+  <h1 class="page-title">Shelf</h1>
+  <p class="page-intro">Books and films, rated out of 20 like everything else here.</p>
+  <Panel title={`${items.length} on the shelf`}>
+    <table>
+      <thead>
+        <tr>
+          <th class="label" scope="col">Title</th>
+          <th class="label" scope="col">Type</th>
+          <th class="label" scope="col">Status</th>
+          <th class="label rating-col" scope="col">Rating</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          items.map(({ data }) => (
+            <tr>
+              <td>
+                <span class="title">{data.title}</span>
+                <span class="muted">{data.creator}</span>
+                {data.oneLiner && <span class="liner">{data.oneLiner}</span>}
+              </td>
+              <td class="label">{data.kind}</td>
+              <td class="label">{statusLabel[data.status]}</td>
+              <td class="rating-col">
+                {data.rating !== undefined ? (
+                  <span class:list={['rating', 'num', band(toTwenty(data.rating))]}>{toTwenty(data.rating)}</span>
+                ) : (
+                  <span class="muted">–</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </Panel>
 </Base>
 
 <style>
-  h3,
-  p {
-    margin: var(--space-1) 0;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    text-align: left;
+    padding: 0 var(--space-3) var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  .title {
+    display: block;
+    font-weight: 700;
+  }
+  .liner {
+    display: block;
+    margin-top: var(--space-1);
+  }
+  .rating-col {
+    text-align: right;
+  }
+  .rating {
+    font-stretch: 72%;
+    font-weight: 800;
+    font-size: 1.25rem;
+  }
+  .low {
+    color: var(--r-low);
+  }
+  .mid {
+    color: var(--r-mid);
+  }
+  .good {
+    color: var(--r-good);
+  }
+  .elite {
+    color: var(--r-elite);
   }
 </style>

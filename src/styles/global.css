@@ -1,36 +1,113 @@
-/* Placeholder design. Everything visual flows from these tokens,
-   so the real design pass is mostly a rewrite of this block. */
-:root {
-  --bg: #fbfaf7;
-  --fg: #1c1b19;
-  --muted: #6b6860;
-  --accent: #c2410c;
-  --border: #e4e1da;
-  --surface: #f2f0ea;
+@import '@fontsource-variable/archivo/wdth.css';
 
-  --font-body: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
-
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 1rem;
-  --space-4: 1.5rem;
-  --space-5: 2.5rem;
-  --space-6: 4rem;
-
-  --measure: 42rem;
-  color-scheme: light dark;
+/* Three skins, borrowed from a cyclorama: night, dawn, day.
+   The phase script in Base.astro sets data-phase from the visitor's clock
+   or their saved choice. Without JS, the OS colour scheme picks night/day. */
+:root,
+[data-phase='day'] {
+  --ground: #e9edf2;
+  --panel: #ffffff;
+  --panel-2: #f3f5f8;
+  --line: #d3d9e2;
+  --fg: #13151c;
+  --muted: #566073;
+  --link: #1d4fc4;
+  --stripe: #f2c230;
+  --stripe-ink: #13151c;
+  --role-ink: #ffffff;
+  --r-low: #b8352a;
+  --r-mid: #8a5d00;
+  --r-good: #1d7f48;
+  --r-elite: #1556b8;
+  --silk-a: rgb(52 64 184 / 0.32);
+  --silk-b: rgb(232 160 0 / 0.38);
+  --silk-blend: multiply;
+  --shadow: 0 1px 2px rgb(19 21 28 / 0.06), 0 6px 18px rgb(19 21 28 / 0.06);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #141412;
-    --fg: #ecebe6;
-    --muted: #9a978e;
-    --accent: #fb923c;
-    --border: #2c2b28;
-    --surface: #1d1c1a;
+  :root:not([data-phase]) {
+    --ground: #11141b;
+    --panel: #191e29;
+    --panel-2: #202737;
+    --line: #2b3345;
+    --fg: #e8ecf2;
+    --muted: #98a2b5;
+    --link: #f2c230;
+    --stripe: #f2c230;
+    --stripe-ink: #13151c;
+    --role-ink: #13151c;
+    --r-low: #ff7a6e;
+    --r-mid: #f2c230;
+    --r-good: #5fd394;
+    --r-elite: #6cc4ff;
+    --silk-a: rgb(120 132 255 / 0.4);
+    --silk-b: rgb(242 194 48 / 0.4);
+    --silk-blend: screen;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+    color-scheme: dark;
   }
+}
+
+[data-phase='night'] {
+  --ground: #11141b;
+  --panel: #191e29;
+  --panel-2: #202737;
+  --line: #2b3345;
+  --fg: #e8ecf2;
+  --muted: #98a2b5;
+  --link: #f2c230;
+  --stripe: #f2c230;
+  --stripe-ink: #13151c;
+  --role-ink: #13151c;
+  --r-low: #ff7a6e;
+  --r-mid: #f2c230;
+  --r-good: #5fd394;
+  --r-elite: #6cc4ff;
+  --silk-a: rgb(120 132 255 / 0.4);
+  --silk-b: rgb(242 194 48 / 0.4);
+  --silk-blend: screen;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  color-scheme: dark;
+}
+
+[data-phase='dawn'] {
+  --ground: #121c52;
+  --panel: #1a276a;
+  --panel-2: #22317c;
+  --line: #34449a;
+  --fg: #f6eef3;
+  --muted: #c3bedd;
+  --link: #ffa3bd;
+  --stripe: #f28ba8;
+  --stripe-ink: #121c52;
+  --role-ink: #121c52;
+  --r-low: #ff8a7e;
+  --r-mid: #ffd166;
+  --r-good: #74e0a8;
+  --r-elite: #bfe9ff;
+  --silk-a: rgb(242 139 168 / 0.42);
+  --silk-b: rgb(255 209 102 / 0.4);
+  --silk-blend: screen;
+  --shadow: 0 1px 2px rgb(5 8 30 / 0.35), 0 8px 24px rgb(5 8 30 / 0.3);
+  color-scheme: dark;
+}
+
+:root {
+  --font: 'Archivo Variable', system-ui, sans-serif;
+  --narrow: 72%;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2.5rem;
+  --space-7: 4rem;
+  --wide: 76rem;
+  --measure: 40rem;
+  --radius: 4px;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 *,
@@ -39,42 +116,59 @@
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
+html {
+  -webkit-text-size-adjust: 100%;
+  scrollbar-color: var(--line) var(--ground);
+  interpolate-size: allow-keywords;
 }
 
-main {
-  max-width: var(--measure);
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-3) var(--space-6);
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ground);
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.6s var(--ease),
+    color 0.6s var(--ease);
+}
+
+::selection {
+  background: var(--stripe);
+  color: var(--stripe-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--stripe);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
 a {
-  color: var(--accent);
+  color: var(--link);
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
 }
 
 h1,
 h2,
 h3 {
-  line-height: 1.2;
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance;
 }
 
-code,
-pre {
-  font-family: var(--font-mono);
-}
-
-pre {
-  background: var(--surface);
-  padding: var(--space-3);
-  border-radius: 6px;
-  overflow-x: auto;
+p {
+  text-wrap: pretty;
 }
 
 img {
@@ -82,25 +176,106 @@ img {
   height: auto;
 }
 
+code,
+pre {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+/* The FM condensed caps voice, for names, labels and tabs. */
+.caps {
+  font-stretch: var(--narrow);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.label {
+  font-stretch: var(--narrow);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
 .muted {
   color: var(--muted);
 }
 
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.list > li {
-  padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.tag {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+.page-title {
+  font-stretch: var(--narrow);
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  letter-spacing: -0.005em;
+  margin-bottom: var(--space-2);
+}
+
+.page-intro {
   color: var(--muted);
+  margin: 0 0 var(--space-5);
+  max-width: var(--measure);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Long-form reading. */
+.prose {
+  max-width: var(--measure);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.prose h2 {
+  font-stretch: var(--narrow);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 1.5rem;
+  margin: var(--space-6) 0 var(--space-3);
+}
+
+.prose h3 {
+  font-size: 1.15rem;
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.prose li + li {
+  margin-top: var(--space-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

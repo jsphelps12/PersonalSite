@@ -25,19 +25,48 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
     <link rel="alternate" type="application/rss+xml" title="Joshua Phelps" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta name="generator" content={Astro.generator} />
+    <script is:inline>
+      // Pick the skin before first paint: saved choice, else the visitor's clock.
+      (() => {
+        let phase = null;
+        try {
+          phase = localStorage.getItem('phase');
+        } catch {}
+        if (!phase || phase === 'auto') {
+          const h = new Date().getHours();
+          phase = h >= 8 && h < 18 ? 'day' : (h >= 5 && h < 8) || (h >= 18 && h < 21) ? 'dawn' : 'night';
+        }
+        document.documentElement.dataset.phase = phase;
+      })();
+    </script>
   </head>
   <body>
+    <a class="skip" href="#main">Skip to content</a>
     <Header />
-    <main>
+    <main id="main" class="page">
       <slot />
     </main>
     <Footer />
   </body>
 </html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: var(--space-4);
+    top: -3rem;
+    background: var(--stripe);
+    color: var(--stripe-ink);
+    padding: var(--space-2) var(--space-3);
+    z-index: 10;
+  }
+  .skip:focus {
+    top: var(--space-2);
+  }
+</style>

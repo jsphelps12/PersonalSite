@@ -1,17 +1,41 @@
 ---
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
 import { formatDate } from '../lib/content';
 
 const updated = new Date('2026-10-16');
 ---
 
 <Base title="Now" description="What I'm focused on right now.">
-  <h1>Now</h1>
-  <p class="muted">Updated {formatDate(updated)}. Inspired by <a href="https://nownownow.com/about">nownownow.com</a>.</p>
-
-  <ul>
-    <li>Prepping for applied AI roles: ML fundamentals, system design, and evals.</li>
-    <li>Building this site, one questionable feature at a time.</li>
-    <li>Thinking about how to measure soccer decision-making with event data.</li>
-  </ul>
+  <div class="column">
+    <h1 class="page-title">Now</h1>
+    <p class="page-intro">
+      Updated {formatDate(updated)}. A <a href="https://nownownow.com/about">now page</a>: what I'm focused on this
+      month.
+    </p>
+    <Panel title="Current focus">
+      <ul class="focus">
+        <li>Prepping for applied AI roles: ML fundamentals, system design, and evals.</li>
+        <li>Building this site, one questionable feature at a time.</li>
+        <li>Thinking about how to measure soccer decision-making with event data.</li>
+      </ul>
+    </Panel>
+  </div>
 </Base>
+
+<style>
+  .column {
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+  .focus {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: var(--space-2);
+    font-size: 1.0625rem;
+  }
+  .focus li::marker {
+    color: var(--stripe);
+  }
+</style>

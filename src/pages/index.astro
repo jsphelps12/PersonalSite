@@ -1,40 +1,315 @@
 ---
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
+import Pitch from '../components/Pitch.astro';
+import AttributeRow from '../components/AttributeRow.astro';
 import PostList from '../components/PostList.astro';
-import Take from '../components/Take.astro';
-import { getPosts, getTakes } from '../lib/content';
+import ProbabilityStrip from '../components/ProbabilityStrip.astro';
+import { profile } from '../data/profile';
+import { getPosts, getTakes, getEvidenceIndex, getPredictionForm, takeSummary, formatDate } from '../lib/content';
 
-const posts = (await getPosts()).slice(0, 5);
-const takes = (await getTakes()).slice(0, 3);
+const posts = (await getPosts()).slice(0, 4);
+const takes = (await getTakes()).slice(0, 4);
+const evidenceFor = await getEvidenceIndex();
+const form = await getPredictionForm();
+const groups = Object.entries(profile.attributes);
+const latestPending = form.recent.find((p) => p.outcome === 'pending');
+const pip = { right: 'W', wrong: 'L', void: 'V', pending: 'P' } as const;
+const pipTitle = { right: 'Called it', wrong: 'Wrong', void: 'Void', pending: 'Pending' } as const;
+let rowIndex = 0;
 ---
 
 <Base>
-  <section class="intro">
-    <h1>Hi, I'm Josh.</h1>
-    <p>
-      I build things with applied AI, have too many opinions about soccer, and occasionally climb
-      mountains. This is where I write it all down.
-    </p>
-    <p class="muted">Currently: <a href="/now">see /now</a>.</p>
+  <section class="profile">
+    <div class="ident">
+      <h1 class="name">{profile.name}</h1>
+      <p class="role">{profile.position} who writes about soccer, models, and the occasional mountain.</p>
+      <dl class="facts">
+        {
+          profile.facts.map((f) => (
+            <div>
+              <dt class="label">{f.label}</dt>
+              <dd>{f.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+    <Pitch />
   </section>
 
-  <section>
-    <h2>Latest writing</h2>
-    <PostList posts={posts} />
-  </section>
+  <div class="grid">
+    <Panel title="Attributes" class="attributes">
+      <p class="note muted">
+        Self-scouted, so take with salt. Ratings with evidence show a number; the rest stay a range until
+        proven. Open any row to see why.
+      </p>
+      {profile.placeholder && <p class="note draft">Draft: these ratings are placeholders until Josh does a proper self-scout.</p>}
+      <div class="cols">
+        {
+          groups.map(([group, attrs]) => (
+            <div>
+              <h3 class="label group">{group}</h3>
+              <ul>
+                {attrs.map((a) => (
+                  <AttributeRow attribute={a} evidence={evidenceFor(a.evidence)} index={rowIndex++} />
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </Panel>
 
-  <section>
-    <h2>Recent takes</h2>
-    {takes.map((take) => <Take take={take} />)}
-    <p><a href="/takes">All takes →</a></p>
-  </section>
+    <div class="side">
+      <Panel title="Prediction form" href="/takes" linkLabel="All takes">
+        <ol class="pips" aria-label="Most recent predictions, newest first">
+          {
+            form.recent.map((p) => (
+              <li class:list={['pip', p.outcome]} title={`${pipTitle[p.outcome]}: ${p.claim}`}>
+                <a href={`/takes#${p.id}`}>
+                  <span aria-hidden="true">{pip[p.outcome]}</span>
+                  <span class="visually-hidden">
+                    {pipTitle[p.outcome]}: {p.claim}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+          {Array.from({ length: Math.max(0, 5 - form.recent.length) }, () => <li class="pip empty" aria-hidden="true" />)}
+        </ol>
+        <p class="record num">
+          <b>{form.right}</b> called · <b>{form.wrong}</b> wrong · <b>{form.pending}</b> pending
+        </p>
+        {
+          latestPending && (
+            <div class="open-call">
+              <p class="claim">
+                <a href={`/takes#${latestPending.id}`}>{latestPending.claim}</a>
+              </p>
+              <ProbabilityStrip josh={latestPending.confidence} market={latestPending.marketProb} />
+            </div>
+          )
+        }
+      </Panel>
+
+      <Panel title="Scout report" href="/about" linkLabel="About">
+        <p class="report">{profile.scoutReport}</p>
+        {profile.placeholder && <p class="draft">Draft report, pending Josh's edit.</p>}
+      </Panel>
+    </div>
+
+    <Panel title="Latest writing" href="/writing" linkLabel="All writing" class="news">
+      <PostList posts={posts} />
+    </Panel>
+
+    <Panel title="Inbox" href="/takes" linkLabel="All takes" class="inbox">
+      <ul class="messages">
+        {
+          takes.map((t) => (
+            <li>
+              <a href={`/takes#${t.id}`}>
+                <span class="label">
+                  {formatDate(t.data.date)} · #{t.data.tags[0] ?? 'take'}
+                </span>
+                <span class="msg">{takeSummary(t.body)}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </Panel>
+  </div>
 </Base>
 
 <style>
-  .intro {
-    margin-bottom: var(--space-5);
+  .profile {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-5) var(--space-6);
+    align-items: end;
+    padding: var(--space-6) var(--space-5) var(--space-5);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: background-color 0.6s var(--ease);
   }
-  section + section {
-    margin-top: var(--space-5);
+  /* Kit stripe. */
+  .profile::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    background: var(--stripe);
+  }
+  .name {
+    font-stretch: 62%;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(3rem, 11vw, 6rem);
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+  }
+  .role {
+    font-size: clamp(1.05rem, 2vw, 1.3rem);
+    max-width: 34ch;
+    margin: var(--space-3) 0 var(--space-5);
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-6);
+    margin: 0;
+  }
+  .facts dd {
+    margin: 0.1rem 0 0;
+    font-weight: 700;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+  .side {
+    display: grid;
+    gap: var(--space-4);
+    align-content: start;
+  }
+
+  .note {
+    margin: 0 0 var(--space-4);
+    font-size: 0.875rem;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-5);
+  }
+  .group {
+    color: var(--fg);
+    padding-bottom: var(--space-1);
+    border-bottom: 2px solid var(--fg);
+  }
+  .cols ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .pips {
+    display: flex;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pip a {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 3px;
+    font-stretch: 72%;
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--role-ink);
+  }
+  .pip.right a {
+    background: var(--r-good);
+  }
+  .pip.wrong a {
+    background: var(--r-low);
+  }
+  .pip.void a {
+    background: var(--muted);
+  }
+  .pip.pending a {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--fg);
+  }
+  .pip.empty {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+    opacity: 0.5;
+  }
+  .record {
+    margin: var(--space-3) 0 0;
+  }
+  .open-call {
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line);
+  }
+  .open-call .claim {
+    margin: 0 0 var(--space-3);
+    font-weight: 600;
+  }
+  .open-call .claim a {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .open-call .claim a:hover {
+    color: var(--link);
+  }
+  .draft {
+    margin: var(--space-3) 0 0;
+    font-size: 0.8125rem;
+    color: var(--r-mid);
+  }
+  .note.draft {
+    margin: calc(-1 * var(--space-2)) 0 var(--space-5);
+  }
+  .report {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .messages {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .messages li + li {
+    border-top: 1px solid var(--line);
+  }
+  .messages a {
+    display: grid;
+    gap: 0.15rem;
+    padding: var(--space-3) 0;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .messages li:first-child a {
+    padding-top: 0;
+  }
+  .messages a:hover .msg {
+    color: var(--link);
+  }
+
+  @media (max-width: 60rem) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .cols {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 40rem) {
+    .profile {
+      grid-template-columns: 1fr;
+      padding: var(--space-5) var(--space-4) var(--space-4);
+    }
+    .cols {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>

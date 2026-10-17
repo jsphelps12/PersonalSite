@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Panel from '../../components/Panel.astro';
 import PostList from '../../components/PostList.astro';
 import { getPosts } from '../../lib/content';
 
@@ -7,6 +8,9 @@ const posts = await getPosts();
 ---
 
 <Base title="Writing" description="Essays on applied AI, soccer analysis, and trip reports.">
-  <h1>Writing</h1>
-  <PostList posts={posts} />
+  <h1 class="page-title">Writing</h1>
+  <p class="page-intro">Applied AI, soccer analysis, and trip reports. Long-form, with the working shown.</p>
+  <Panel title={`${posts.length} ${posts.length === 1 ? 'post' : 'posts'}`}>
+    <PostList posts={posts} />
+  </Panel>
 </Base>

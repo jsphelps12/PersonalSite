@@ -1,0 +1,87 @@
+---
+// Forecasts as translucent bands leaning away from 50%. Where two forecasters
+// lean the same way their bands overlap and the colour deepens.
+interface Props {
+  josh: number;
+  market?: number;
+}
+
+const { josh, market } = Astro.props;
+const bandStyle = (p: number) => {
+  const lo = Math.min(p, 0.5) * 100;
+  const hi = Math.max(p, 0.5) * 100;
+  return `left: ${lo}%; width: ${hi - lo}%`;
+};
+const pct = (p: number) => `${Math.round(p * 100)}%`;
+---
+
+<div class="strip">
+  <div class="track" aria-hidden="true">
+    <span class="mid"></span>
+    <span class="band josh" style={bandStyle(josh)}></span>
+    {market !== undefined && <span class="band market" style={bandStyle(market)} />}
+  </div>
+  <p class="legend">
+    <span><i class="key josh"></i>Josh <b class="num">{pct(josh)}</b></span>
+    {
+      market !== undefined ? (
+        <span>
+          <i class="key market" />
+          Market <b class="num">{pct(market)}</b>
+        </span>
+      ) : (
+        <span>No market price logged</span>
+      )
+    }
+  </p>
+</div>
+
+<style>
+  .track {
+    position: relative;
+    height: 0.9rem;
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    isolation: isolate;
+  }
+  .mid {
+    position: absolute;
+    left: 50%;
+    top: -3px;
+    bottom: -3px;
+    width: 1px;
+    background: var(--muted);
+  }
+  .band {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    mix-blend-mode: var(--silk-blend);
+  }
+  .josh {
+    background: var(--silk-a);
+  }
+  .market {
+    background: var(--silk-b);
+  }
+  .legend {
+    display: flex;
+    gap: var(--space-4);
+    margin: var(--space-2) 0 0;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+  .legend b {
+    color: var(--fg);
+    font-weight: 700;
+  }
+  .key {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-right: 0.35rem;
+    vertical-align: -0.05rem;
+    border: 1px solid var(--line);
+  }
+</style>

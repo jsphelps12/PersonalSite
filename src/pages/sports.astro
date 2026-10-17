@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
 import PostList from '../components/PostList.astro';
 import Take from '../components/Take.astro';
 import { getPosts, getTakes } from '../lib/content';
@@ -9,18 +10,28 @@ const takes = (await getTakes()).filter((t) => t.data.tags.includes('sports'));
 ---
 
 <Base title="Sports" description="Soccer analysis, hot takes, and predictions I'll be held to.">
-  <h1>Sports</h1>
-  <p class="muted">Mostly soccer. Analysis when I've done the work, takes when I haven't.</p>
-
-  <h2>Analysis</h2>
-  <PostList posts={analysis} />
-
-  <h2>Takes</h2>
-  {takes.length ? takes.map((take) => <Take take={take} />) : <p class="muted">No takes yet.</p>}
+  <h1 class="page-title">Sports</h1>
+  <p class="page-intro">Mostly soccer. Analysis when I've done the work, takes when I haven't.</p>
+  <div class="grid">
+    <Panel title="Analysis">
+      <PostList posts={analysis} empty="No analysis yet." />
+    </Panel>
+    <Panel title="Takes" href="/takes" linkLabel="All takes">
+      {takes.length ? takes.map((take) => <Take take={take} />) : <p class="muted">No takes yet.</p>}
+    </Panel>
+  </div>
 </Base>
 
 <style>
-  h2 {
-    margin-top: var(--space-5);
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: var(--space-4);
+    align-items: start;
+  }
+  @media (max-width: 56rem) {
+    .grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 </style>

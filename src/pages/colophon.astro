@@ -3,15 +3,27 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Colophon" description="How this site is built.">
-  <h1>Colophon</h1>
-  <p>
-    Built with <a href="https://astro.build">Astro</a> and hosted on Cloudflare. Content is plain
-    Markdown in a git repo. The source is on <a href="https://github.com/jsphelps12/PersonalSite"
-      >GitHub</a
-    >.
-  </p>
-  <p class="muted">
-    Coming eventually: an MCP server so I can post by talking to it, and a JoshGPT that's actually
-    an AI.
-  </p>
+  <div class="column">
+    <h1 class="page-title">Colophon</h1>
+    <div class="prose">
+      <p>
+        The design borrows from Football Manager's player profile screens: attributes out of 20, a form guide, a
+        scout report. The skins follow the time of day, night to dawn to day, unless you pick one.
+      </p>
+      <p>
+        Built with <a href="https://astro.build">Astro</a>, set in Archivo, hosted on Cloudflare. Content is plain
+        Markdown in a git repo, and the source is on <a href="https://github.com/jsphelps12/PersonalSite">GitHub</a>.
+      </p>
+      <p class="muted">
+        Coming eventually: an MCP server so I can post by talking to it, and a JoshGPT that's actually an AI.
+      </p>
+    </div>
+  </div>
 </Base>
+
+<style>
+  .column {
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+</style>

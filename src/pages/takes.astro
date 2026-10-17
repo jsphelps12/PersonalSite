@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
 import Take from '../components/Take.astro';
 import { getTakes } from '../lib/content';
 
@@ -7,7 +8,18 @@ const takes = await getTakes();
 ---
 
 <Base title="Takes" description="Short thoughts on soccer, tech, and everything else.">
-  <h1>Takes</h1>
-  <p class="muted">Short, fast, occasionally wrong. The predictions get scored.</p>
-  {takes.map((take) => <Take take={take} />)}
+  <div class="column">
+    <h1 class="page-title">Takes</h1>
+    <p class="page-intro">Short, fast, occasionally wrong. The predictions get scored.</p>
+    <Panel>
+      {takes.map((take) => <Take take={take} />)}
+    </Panel>
+  </div>
 </Base>
+
+<style>
+  .column {
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+</style>

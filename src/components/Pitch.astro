@@ -1,0 +1,121 @@
+---
+import { profile } from '../data/profile';
+
+// A small horizontal pitch with the roles plotted on it, FM position-map style.
+const W = 160;
+const H = 104;
+const roles = profile.roles;
+---
+
+<figure class="pitch">
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="pitch-title">
+    <title id="pitch-title">Positions: {roles.map((r) => `${r.label} (${r.level})`).join(', ')}</title>
+    <g class="lines" fill="none">
+      <rect x="2" y="2" width={W - 4} height={H - 4} rx="2" />
+      <line x1={W / 2} y1="2" x2={W / 2} y2={H - 2} />
+      <circle cx={W / 2} cy={H / 2} r="13" />
+      <rect x="2" y={H / 2 - 22} width="22" height="44" />
+      <rect x={W - 24} y={H / 2 - 22} width="22" height="44" />
+      <rect x="2" y={H / 2 - 10} width="8" height="20" />
+      <rect x={W - 10} y={H / 2 - 10} width="8" height="20" />
+    </g>
+    {
+      roles.map((r) => {
+        const cx = 2 + (r.x / 100) * (W - 4);
+        const cy = 2 + (r.y / 100) * (H - 4);
+        return (
+          <g class:list={['role', r.level.toLowerCase()]}>
+            <circle cx={cx} cy={cy} r="8" />
+            <text x={cx} y={cy + 3}>
+              {r.code}
+            </text>
+          </g>
+        );
+      })
+    }
+  </svg>
+  <figcaption>
+    <ul>
+      {
+        roles.map((r) => (
+          <li>
+            <span class:list={['dot', r.level.toLowerCase()]} />
+            <span>{r.label}</span>
+            <span class="label">{r.level}</span>
+          </li>
+        ))
+      }
+    </ul>
+    {profile.placeholder && <p class="draft">Draft positions, pending Josh's edit.</p>}
+  </figcaption>
+</figure>
+
+<style>
+  .pitch {
+    margin: 0;
+    display: grid;
+    gap: var(--space-3);
+  }
+  svg {
+    width: 100%;
+    max-width: 18rem;
+    height: auto;
+    background: var(--panel-2);
+    border-radius: var(--radius);
+  }
+  .lines {
+    stroke: var(--line);
+    stroke-width: 1;
+  }
+  .role circle {
+    stroke: var(--panel);
+    stroke-width: 1.5;
+  }
+  .role text {
+    font-family: var(--font);
+    font-stretch: 72%;
+    font-weight: 800;
+    font-size: 6.5px;
+    text-anchor: middle;
+    fill: var(--role-ink, var(--stripe-ink));
+  }
+  .natural circle,
+  .dot.natural {
+    fill: var(--r-elite);
+    background: var(--r-elite);
+  }
+  .accomplished circle,
+  .dot.accomplished {
+    fill: var(--r-good);
+    background: var(--r-good);
+  }
+  .unconvincing circle,
+  .dot.unconvincing {
+    fill: var(--r-mid);
+    background: var(--r-mid);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-1);
+    font-size: 0.875rem;
+  }
+  li {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .draft {
+    margin: var(--space-2) 0 0;
+    font-size: 0.8125rem;
+    color: var(--r-mid);
+  }
+  .dot {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+  }
+</style>

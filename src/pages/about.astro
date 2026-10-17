@@ -3,9 +3,18 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="About">
-  <h1>About</h1>
-  <p>TODO: write this in your own voice. Who you are, what you're into, what you're looking for.</p>
-  <p>
-    Find me on <a href="https://github.com/jsphelps12">GitHub</a>.
-  </p>
+  <div class="column">
+    <h1 class="page-title">About</h1>
+    <div class="prose">
+      <p>TODO: write this in your own voice. Who you are, what you're into, what you're looking for.</p>
+      <p>Find me on <a href="https://github.com/jsphelps12">GitHub</a>.</p>
+    </div>
+  </div>
 </Base>
+
+<style>
+  .column {
+    max-width: var(--measure);
+    margin: 0 auto;
+  }
+</style>

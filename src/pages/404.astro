@@ -3,7 +3,33 @@ import Base from '../layouts/Base.astro';
 ---
 
 <Base title="Offside">
-  <h1>🚩 Offside.</h1>
-  <p>This page was beyond the last defender when the ball was played. VAR has confirmed it doesn't exist.</p>
-  <p><a href="/">Restart from the back →</a></p>
+  <div class="offside">
+    <svg class="flag" viewBox="0 0 48 64" aria-hidden="true">
+      <line x1="6" y1="4" x2="6" y2="62" stroke="var(--fg)" stroke-width="3" stroke-linecap="round" />
+      <path d="M7.5 5h34v22h-34z" fill="var(--r-low)" />
+      <path d="M7.5 5h17v11h-17zM24.5 16h17v11h-17z" fill="var(--stripe)" />
+    </svg>
+    <h1 class="page-title">Offside</h1>
+    <p>This page was beyond the last defender when the ball was played. VAR has checked: it doesn't exist.</p>
+    <p><a href="/">Restart from the back</a></p>
+  </div>
 </Base>
+
+<style>
+  .offside {
+    max-width: var(--measure);
+    margin: var(--space-6) auto;
+    text-align: center;
+  }
+  .flag {
+    width: 3.5rem;
+    margin-bottom: var(--space-3);
+    transform-origin: 6px 62px;
+    animation: wave 1.2s var(--ease) 0.2s both;
+  }
+  @keyframes wave {
+    from {
+      transform: rotate(-24deg);
+    }
+  }
+</style>

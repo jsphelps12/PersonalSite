@@ -1,0 +1,105 @@
+---
+const phases = [
+  { id: 'auto', label: 'Auto' },
+  { id: 'night', label: 'Night' },
+  { id: 'dawn', label: 'Dawn' },
+  { id: 'day', label: 'Day' },
+];
+---
+
+<fieldset class="phase">
+  <legend class="visually-hidden">Skin</legend>
+  <span class="label" aria-hidden="true">Skin</span>
+  <div class="options">
+    {
+      phases.map(({ id, label }) => (
+        <label>
+          <input type="radio" name="phase" value={id} />
+          <span>{label}</span>
+        </label>
+      ))
+    }
+  </div>
+</fieldset>
+
+<script>
+  const inputs = document.querySelectorAll<HTMLInputElement>('input[name="phase"]');
+  let saved = 'auto';
+  try {
+    saved = localStorage.getItem('phase') ?? 'auto';
+  } catch {}
+  inputs.forEach((input) => {
+    input.checked = input.value === saved;
+    input.addEventListener('change', () => {
+      try {
+        localStorage.setItem('phase', input.value);
+      } catch {}
+      if (input.value === 'auto') {
+        const h = new Date().getHours();
+        document.documentElement.dataset.phase =
+          h >= 8 && h < 18 ? 'day' : (h >= 5 && h < 8) || (h >= 18 && h < 21) ? 'dawn' : 'night';
+      } else {
+        document.documentElement.dataset.phase = input.value;
+      }
+    });
+  });
+</script>
+
+<style>
+  .phase {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .options {
+    display: flex;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  label {
+    position: relative;
+  }
+  input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+  span {
+    display: block;
+    padding: 0.2rem 0.55rem;
+    font-stretch: var(--narrow);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+    transition:
+      background-color 0.2s var(--ease),
+      color 0.2s var(--ease);
+  }
+  label + label span {
+    border-left: 1px solid var(--line);
+  }
+  input:hover + span {
+    color: var(--fg);
+  }
+  input:checked + span {
+    background: var(--stripe);
+    color: var(--stripe-ink);
+  }
+  input:focus-visible + span {
+    outline: 2px solid var(--stripe);
+    outline-offset: -2px;
+  }
+  @media (max-width: 30rem) {
+    .phase > .label {
+      display: none;
+    }
+  }
+</style>
