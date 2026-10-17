@@ -55,13 +55,13 @@ export function readEntry(rel: string) {
   return { data: (parse(match[1]) ?? {}) as Record<string, unknown>, body: match[2].trim() };
 }
 
-/** Repo-relative path of an entry, whether it's .md or .mdx. */
+/**
+ * Repo-relative path of an entry, whether it's .md or .mdx. Ids are matched
+ * against the collection's actual files, never joined into a path, so an id
+ * like "../../x" can't reach anything outside the collection.
+ */
 export function findEntry(collection: string, id: string) {
-  for (const ext of ['.md', '.mdx']) {
-    const rel = path.join(CONTENT, collection, `${id}${ext}`);
-    if (exists(rel)) return rel;
-  }
-  return undefined;
+  return listEntries(collection).find((entry) => entry.id === id)?.rel;
 }
 
 export function listEntries(collection: string) {

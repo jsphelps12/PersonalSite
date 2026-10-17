@@ -134,8 +134,8 @@ server.registerTool(
     },
   },
   guarded(({ id, outcome }) => {
-    const rel = `${CONTENT}/takes/${id}.md`;
-    if (!exists(rel)) return fail(`No take with id ${id}. Use list_content to find it.`);
+    const rel = findEntry('takes', id);
+    if (!rel) return fail(`No take with id ${id}. Use list_content to find it.`);
     const { data, body } = readEntry(rel);
     const prediction = data.prediction as Record<string, unknown> | undefined;
     if (!prediction) return fail(`Take ${id} has no prediction.`);
