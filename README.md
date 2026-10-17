@@ -22,13 +22,27 @@ Everything lives in `src/content/` as Markdown, validated by schemas in `src/con
 | `projects/` | Case-study project writeups | `/projects` |
 | `shelf/` | Books and films | `/shelf` |
 
-Set `draft: true` on a post to hide it.
+Set `draft: true` on a post to hide it. The /now page reads `src/data/now.json`.
+
+## Posting with Claude (MCP server)
+
+`mcp/server.ts` is a local MCP server, registered for Claude Code in `.mcp.json`. Open Claude Code in this repo, approve the `site` server once, then just ask, e.g. "post a take: ... 60% confident, resolves end of season".
+
+| Tool | What it does |
+|---|---|
+| `list_content` | Newest entries in a collection, with take ids and prediction status |
+| `post_take` | New take, optionally with a prediction |
+| `resolve_prediction` | Set a prediction to right / wrong / void (claim and confidence stay locked) |
+| `add_to_shelf` | Add or update a book or film |
+| `draft_post` | New long-form post with `draft: true` |
+| `update_now` | Replace the /now list |
+| `publish` | Push to main, which deploys. `dryRun` lists what would go live. |
+
+Every write validates against `src/content/schemas.ts` (the same schemas the site uses) and makes a local commit of just that file. Nothing is live until `publish`. Check types with `pnpm mcp:check`.
 
 ## Roadmap
 
-- Real design pass
 - Predictions ledger (calibration, market comparison, AI hotness score)
 - JoshGPT
-- MCP server for posting
 - Ask the site (RAG over the content)
 - Soccer viz components (radar/pizza charts, heat maps)
