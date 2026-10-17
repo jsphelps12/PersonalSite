@@ -51,6 +51,7 @@ export const projectSchema = z.object({
   repo: z.url().optional(),
   url: z.url().optional(),
   featured: z.boolean().default(false),
+  draft: z.boolean().default(false),
 });
 
 // Books and films.

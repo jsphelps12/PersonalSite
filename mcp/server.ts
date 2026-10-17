@@ -4,16 +4,21 @@
 // Markdown/JSON file, and makes a local git commit. Nothing goes live until
 // `publish` pushes to main, which Cloudflare deploys.
 //
+// Prompts (trip-report, project-writeup) are guided interviews that end in a
+// draft; in Claude Code they appear as slash commands.
+//
 // Run: node mcp/server.ts (stdio). Registered for Claude Code in .mcp.json.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'astro/zod';
-import { postSchema, takeSchema, shelfSchema, nowSchema } from '../src/content/schemas.ts';
+import { stringify } from 'yaml';
+import { postSchema, takeSchema, projectSchema, shelfSchema, nowSchema } from '../src/content/schemas.ts';
 import {
   CONTENT,
   commit,
   currentBranch,
   exists,
+  findEntry,
   freePath,
   listEntries,
   push,
@@ -40,6 +45,10 @@ function guarded<A>(fn: (args: A) => Result) {
     try {
       return fn(args);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        const issues = error.issues.map((i) => `- ${i.path.join('.') || '(entry)'}: ${i.message}`);
+        return fail(`Not saved, the entry wouldn't be valid:\n${issues.join('\n')}`);
+      }
       return fail(error instanceof Error ? error.message : String(error));
     }
   };
@@ -209,6 +218,95 @@ server.registerTool(
 );
 
 server.registerTool(
+  'draft_project',
+  {
+    title: 'Draft a project writeup',
+    description:
+      "Create a project case study as a draft (hidden until draft is set to false with update_entry and published). Structure the body as Problem, Approach, Evaluation, What failed, What's next. Use only facts, numbers and results the user gave; mark gaps as TODOs.",
+    inputSchema: {
+      title: z.string(),
+      description: z.string().describe('One sentence: what it is and why it matters.'),
+      status: z.enum(['idea', 'building', 'shipped', 'archived']),
+      stack: z.array(z.string()).default([]),
+      tags: z
+        .array(z.string())
+        .default([])
+        .describe('Lowercase skill tags (e.g. python, ml, evals, llm). These link the project to ratings on the home page.'),
+      repo: z.url().optional(),
+      url: z.url().optional(),
+      body: z.string().describe('Markdown body.'),
+    },
+  },
+  guarded(({ body, ...fields }) => {
+    const frontmatter = Object.fromEntries(
+      Object.entries({ ...fields, date: today(), draft: true }).filter(([, v]) => v !== undefined),
+    );
+    projectSchema.parse(frontmatter);
+    const rel = freePath(`${CONTENT}/projects`, slugify(fields.title));
+    writeEntry(rel, frontmatter, body);
+    const sha = commit([rel], `Draft project: ${fields.title}`);
+    return ok(`Drafted ${rel} (draft: true, so it stays hidden even after publishing). ${committedNote(sha)}`);
+  }),
+);
+
+server.registerTool(
+  'get_entry',
+  {
+    title: 'Read an entry in full',
+    description:
+      'Read one post, take, project or shelf entry in full: its frontmatter and Markdown body. Use before update_entry so edits start from the current text. Find ids with list_content.',
+    inputSchema: {
+      collection: z.enum(['posts', 'takes', 'projects', 'shelf']),
+      id: z.string(),
+    },
+    annotations: { readOnlyHint: true },
+  },
+  guarded(({ collection, id }) => {
+    const rel = findEntry(collection, id);
+    if (!rel) return fail(`No ${collection} entry with id ${id}. Use list_content to find it.`);
+    const { data, body } = readEntry(rel);
+    return ok(`${rel}\n\n---\n${stringify(data, { lineWidth: 0 }).trimEnd()}\n---\n\n${body || '(empty body)'}`);
+  }),
+);
+
+server.registerTool(
+  'update_entry',
+  {
+    title: 'Edit a post or project',
+    description:
+      "Edit an existing post or project: any frontmatter fields and/or the body. Pass only what changes; body replaces the whole body, so read it with get_entry first. Set draft to false to make a draft public (it goes live on the next publish). Takes and predictions can't be edited here, by design.",
+    inputSchema: {
+      collection: z.enum(['posts', 'projects']),
+      id: z.string(),
+      fields: z
+        .record(z.string(), z.unknown())
+        .default({})
+        .describe('Frontmatter fields to set, e.g. {"draft": false} or {"title": "..."}. Use null to remove an optional field.'),
+      body: z.string().optional().describe('New Markdown body, replacing the old one.'),
+    },
+  },
+  guarded(({ collection, id, fields, body }) => {
+    const rel = findEntry(collection, id);
+    if (!rel) return fail(`No ${collection} entry with id ${id}. Use list_content to find it.`);
+    if ('date' in fields) return fail('The original date is fixed. An "updated" date is set automatically on edits to public posts.');
+    const current = readEntry(rel);
+    const merged: Record<string, unknown> = { ...current.data, ...fields };
+    for (const [key, value] of Object.entries(merged)) if (value === null) delete merged[key];
+    const wasPublic = current.data.draft !== true;
+    if (collection === 'posts' && wasPublic && body !== undefined && body.trim() !== current.body) {
+      merged.updated = today();
+    }
+    (collection === 'posts' ? postSchema : projectSchema).parse(merged);
+    writeEntry(rel, merged, body ?? current.body);
+    const goingPublic = !wasPublic && merged.draft === false;
+    const title = String(merged.title ?? id);
+    const sha = commit([rel], `${goingPublic ? 'Undraft' : 'Edit'} ${collection === 'posts' ? 'post' : 'project'}: ${title}`);
+    const note = goingPublic ? ' It is no longer a draft, so it will appear on the site after publish.' : '';
+    return ok(`Updated ${rel}.${note} ${committedNote(sha)}`);
+  }),
+);
+
+server.registerTool(
   'update_now',
   {
     title: 'Update the /now page',
@@ -244,6 +342,71 @@ server.registerTool(
     push();
     return ok(`Published ${pending.length} commits. joshuaphelps.com updates in a minute or two:\n${list}`);
   }),
+);
+
+const interview = (text: string) => ({
+  messages: [{ role: 'user' as const, content: { type: 'text' as const, text } }],
+});
+
+const INTERVIEW_RULES = `How to run this:
+- Ask one or two questions at a time, conversationally. Follow up on anything vague or interesting; the best material is usually in the follow-up.
+- Use my words. Tidy grammar, but keep my voice, jokes and opinions. Never invent facts, numbers, names or experiences; if something is missing, ask or leave a TODO.
+- When you have enough, show me the full draft in chat and ask for changes before saving anything.
+- Save only after I approve. It stays a draft, and nothing goes live until I ask you to publish.`;
+
+server.registerPrompt(
+  'trip-report',
+  {
+    title: 'Write a trip report',
+    description: 'Interview me about a trip or climb, then draft an adventure post with the trip stats.',
+    argsSchema: { trip: z.string().optional().describe('Which trip, e.g. "Grand Teton"') },
+  },
+  ({ trip }) =>
+    interview(`Help me write a trip report for my site${trip ? ` about ${trip}` : ''}.
+
+First, call list_content for posts to check whether a post for this trip already exists (there may be a SAMPLE placeholder). If it does, we'll replace that post's body and fields with update_entry instead of creating a new one.
+
+Interview me to get:
+1. Where and when, who I went with, and why this trip.
+2. How I prepared, and what I was worried about going in.
+3. The route, told as a story: the approach, the crux, the moment it got real.
+4. What went wrong or surprised me.
+5. The summit or high point: what it was actually like.
+6. Stats, only the ones I actually know: summit elevation (ft), elevation gain (ft), distance (mi).
+7. What I'd tell someone attempting it, and whether I'd go back.
+
+Write it as a first-person story, not a guidebook. Put stats in the trip fields, not repeated in the prose. Suggest a title and a one-sentence description that make someone want to read it. Leave [PHOTO: description] markers where photos would help.
+
+Save with draft_post (category: adventure, with trip stats and a few lowercase tags), or update_entry if a post already exists.
+
+${INTERVIEW_RULES}`),
+);
+
+server.registerPrompt(
+  'project-writeup',
+  {
+    title: 'Write a project case study',
+    description: 'Interview me about a project, then draft a case-study writeup aimed at applied AI hiring managers.',
+    argsSchema: { project: z.string().optional().describe('Which project') },
+  },
+  ({ project }) =>
+    interview(`Help me write a project case study for my site${project ? ` about ${project}` : ''}. The main readers are hiring managers for applied AI roles: they care about judgment, evaluation and honesty about tradeoffs more than polish.
+
+First, call list_content for projects to check whether one already exists. If it does, read it with get_entry and we'll update it with update_entry instead of creating a new one.
+
+Interview me to get:
+1. The problem: what I wanted, for whom, and why it was worth doing.
+2. The approach: what I built, the key decisions, and the alternatives I considered and rejected (and why).
+3. Evaluation: how I knew it worked. Metrics, baselines, evals, test sets, user feedback. Real numbers only; if I didn't measure something, say so plainly.
+4. What failed: dead ends, bugs that taught me something, things I'd do differently.
+5. Status and next steps.
+6. Stack, a repo link and a live link if they exist.
+
+Structure the body with these sections: ## Problem, ## Approach, ## Evaluation, ## What failed, ## What's next. Open with a two-sentence summary that states the result. Suggest lowercase skill tags (e.g. python, ml, evals, llm, data, web): they link this project to the attribute ratings on my home page.
+
+Save with draft_project, or update_entry if the project already exists.
+
+${INTERVIEW_RULES}`),
 );
 
 await server.connect(new StdioServerTransport());

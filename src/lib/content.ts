@@ -13,7 +13,8 @@ export async function getTakes() {
 }
 
 export async function getProjects() {
-  return (await getCollection('projects')).sort(byDateDesc);
+  const projects = await getCollection('projects', ({ data }) => !data.draft);
+  return projects.sort(byDateDesc);
 }
 
 export function formatDate(date: Date) {

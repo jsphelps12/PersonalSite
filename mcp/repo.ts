@@ -55,6 +55,15 @@ export function readEntry(rel: string) {
   return { data: (parse(match[1]) ?? {}) as Record<string, unknown>, body: match[2].trim() };
 }
 
+/** Repo-relative path of an entry, whether it's .md or .mdx. */
+export function findEntry(collection: string, id: string) {
+  for (const ext of ['.md', '.mdx']) {
+    const rel = path.join(CONTENT, collection, `${id}${ext}`);
+    if (exists(rel)) return rel;
+  }
+  return undefined;
+}
+
 export function listEntries(collection: string) {
   const dir = path.join(ROOT, CONTENT, collection);
   if (!existsSync(dir)) return [];

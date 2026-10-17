@@ -35,8 +35,16 @@ Set `draft: true` on a post to hide it. The /now page reads `src/data/now.json`.
 | `resolve_prediction` | Set a prediction to right / wrong / void (claim and confidence stay locked) |
 | `add_to_shelf` | Add or update a book or film |
 | `draft_post` | New long-form post with `draft: true` |
+| `draft_project` | New project case study with `draft: true` |
+| `get_entry` | Read any entry in full (frontmatter and body) |
+| `update_entry` | Edit a post or project, including `draft: false` to make it public |
 | `update_now` | Replace the /now list |
 | `publish` | Push to main, which deploys. `dryRun` lists what would go live. |
+
+Prompts, which appear as slash commands in Claude Code, run a guided interview and end in a draft you approve:
+
+- `trip-report`: a first-person trip story plus summit/gain/distance stats
+- `project-writeup`: a case study (Problem, Approach, Evaluation, What failed, What's next) for applied AI hiring managers
 
 Every write validates against `src/content/schemas.ts` (the same schemas the site uses) and makes a local commit of just that file. Nothing is live until `publish`. Check types with `pnpm mcp:check`.
 
