@@ -1,10 +1,18 @@
 {
-  // Cloudflare Workers static-assets deploy. `pnpm deploy` builds and ships ./dist.
+  // Cloudflare Workers static-assets deploy. Workers Builds runs `pnpm run build`
+  // then `npx wrangler deploy` on every push to main.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "joshuaphelps-site",
   "compatibility_date": "2026-10-01",
   "assets": {
     "directory": "./dist",
     "not_found_handling": "404-page"
-  }
+  },
+  // Serve only on the real domain. www is redirected to the apex by a
+  // Cloudflare Redirect Rule (Rules > Redirect Rules), not by this Worker.
+  "workers_dev": false,
+  "routes": [
+    { "pattern": "joshuaphelps.com", "custom_domain": true },
+    { "pattern": "www.joshuaphelps.com", "custom_domain": true }
+  ]
 }
