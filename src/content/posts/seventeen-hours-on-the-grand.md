@@ -9,7 +9,7 @@ tags:
   - climbing
   - scrambling
   - wyoming
-draft: true
+draft: false
 trip:
   location: Grand Teton National Park, Wyoming
   summitFt: 13775
