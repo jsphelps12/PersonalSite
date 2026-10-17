@@ -8,6 +8,7 @@
 // draft; in Claude Code they appear as slash commands.
 //
 // Run: node mcp/server.ts (stdio). Registered for Claude Code in .mcp.json.
+import path from 'node:path';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'astro/zod';
@@ -29,6 +30,7 @@ import {
   writeEntry,
   writeJson,
 } from './repo.ts';
+import { assertFolder, expandHome, listImages, preparePhoto } from './photos.ts';
 
 const NOW_FILE = 'src/data/now.json';
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD');
@@ -40,10 +42,10 @@ const fail = (text: string) => ({ content: [{ type: 'text' as const, text }], is
 type Result = ReturnType<typeof ok> | ReturnType<typeof fail>;
 
 /** Run a tool body, turning thrown errors (schema, git, fs) into tool errors. */
-function guarded<A>(fn: (args: A) => Result) {
+function guarded<A>(fn: (args: A) => Result | Promise<Result>) {
   return async (args: A) => {
     try {
-      return fn(args);
+      return await fn(args);
     } catch (error) {
       if (error instanceof z.ZodError) {
         const issues = error.issues.map((i) => `- ${i.path.join('.') || '(entry)'}: ${i.message}`);
@@ -307,6 +309,57 @@ server.registerTool(
 );
 
 server.registerTool(
+  'add_photos',
+  {
+    title: 'Add photos to a post',
+    description:
+      "Copy photos from a local folder into a post: each is oriented, resized to 2000px on the long edge, converted to JPEG (HEIC included) and stripped of all metadata, GPS included. They're saved next to the post and committed. Returns Markdown image lines; put them in the body with update_entry, with alt text describing what's in each photo and a short italic caption if wanted. Look at the photos first to pick and place them.",
+    inputSchema: {
+      id: z.string().describe('Post id, from list_content.'),
+      folder: z.string().describe('Absolute path or ~/... to the folder holding the originals. Nothing in it is changed.'),
+      photos: z
+        .array(
+          z.object({
+            file: z.string().describe('File name inside the folder, e.g. IMG_4628.jpeg.'),
+            name: z.string().optional().describe('Short descriptive name for the saved file, e.g. "delta lake". Defaults to the original name.'),
+          }),
+        )
+        .optional()
+        .describe('Which photos to add, in order. Omit to add every image in the folder.'),
+    },
+  },
+  guarded(async ({ id, folder, photos }) => {
+    const rel = findEntry('posts', id);
+    if (!rel) return fail(`No post with id ${id}. Use list_content to find it.`);
+    const dir = expandHome(folder);
+    assertFolder(dir);
+    const available = listImages(dir);
+    const picks = photos ?? available.map((file) => ({ file, name: undefined }));
+    if (!picks.length) return fail(`No images in ${dir}.`);
+    // Only names that are actually in the folder, so a "file" can't point elsewhere.
+    const missing = picks.filter((p) => !available.includes(p.file)).map((p) => p.file);
+    if (missing.length) return fail(`Not images in ${dir}: ${missing.join(', ')}. Found: ${available.join(', ')}`);
+
+    const destDir = path.join(path.dirname(rel), id);
+    const done = [];
+    for (const { file, name } of picks) {
+      done.push(await preparePhoto(path.join(dir, file), destDir, name ?? path.parse(file).name));
+    }
+    const sha = commit(
+      done.map((d) => d.rel),
+      `Add ${done.length} photo${done.length === 1 ? '' : 's'} to ${id}`,
+    );
+    const lines = done.map((d) => {
+      const md = `![TODO alt text](./${id}/${path.basename(d.rel)})`;
+      return `${d.from} -> ${d.rel} (${d.width}x${d.height}, ${d.kb} KB)\n  ${md}`;
+    });
+    return ok(
+      `Added ${done.length} photo${done.length === 1 ? '' : 's'}, metadata stripped:\n${lines.join('\n')}\n\nInsert the Markdown lines into the body with update_entry. ${committedNote(sha)}`,
+    );
+  }),
+);
+
+server.registerTool(
   'update_now',
   {
     title: 'Update the /now page',
@@ -375,7 +428,7 @@ Interview me to get:
 6. Stats, only the ones I actually know: summit elevation (ft), elevation gain (ft), distance (mi).
 7. What I'd tell someone attempting it, and whether I'd go back.
 
-Write it as a first-person story, not a guidebook. Put stats in the trip fields, not repeated in the prose. Suggest a title and a one-sentence description that make someone want to read it. Leave [PHOTO: description] markers where photos would help.
+Write it as a first-person story, not a guidebook. Put stats in the trip fields, not repeated in the prose. Suggest a title and a one-sentence description that make someone want to read it. Leave [PHOTO: description] markers where photos would help. Once the post is saved, if I have photos in a folder, look at them, suggest which to use and where, then add them with add_photos and swap the markers for the image lines.
 
 Save with draft_post (category: adventure, with trip stats and a few lowercase tags), or update_entry if a post already exists.
 
