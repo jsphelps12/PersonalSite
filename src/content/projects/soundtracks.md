@@ -1,55 +1,52 @@
 ---
 title: Soundtracks
-description: An iOS journal for the songs tied to your memories, and an experiment in how much of an app I could hand off to Claude Code while still steering it.
+description: An iOS app for the memories tied to songs. Log the moment while it's fresh, and let the song bring you back to it later.
 date: 2026-02-12
 status: shipped
 stack: [Expo, React Native, TypeScript, Supabase]
-tags: [evals, ai-agents, mobile]
+tags: [mobile, ai-agents, evals]
 repo: https://github.com/jsphelps12/music-memory-app
 url: https://apps.apple.com/us/app/soundtracks/id6759203604
 featured: true
 ---
 
-Soundtracks is a journal for the links between music and memory, live on the App Store. It was also my testbed for one question: how much of building an app can I hand off to AI while still steering it where I want it to go?
+Soundtracks is a memory app, live on the App Store. You log a moment along with the song that goes with it, and later the app uses the song to bring you back to the moment.
 
 ## Problem
 
 Years ago I was driving back to Provo from Goblin Valley in central Utah with my friends, listening to "Runaway" by Kanye West for the first time. That song and that moment are tied together in my head for good. Once I noticed it, I saw it everywhere: a lot of my memories are attached to a song.
 
-I wanted one place to hold all of that. Record the moment and the song, keep track of what I'm listening to and how my taste changes over time, and journal normally when I feel like it. Music has a way of pulling you back to a moment or a whole era of your life, so in a way the app is a time machine.
+I wanted one place to hold all of that: the moment, the song, what I'm listening to and how my taste changes over time. Music can pull you back to a single afternoon or a whole era of your life, so in a way the app is a time machine. It isn't a music app, and it isn't really a journal. Music is just the way back in.
 
-It's a personal project. I love music, and I wanted a real app to practice building with Claude Code. Blowing up was never the success metric.
+It's a personal project. I love music, and blowing up was never the success metric.
 
 ## Approach
 
-The app is Expo / React Native with Supabase for auth, Postgres and storage. Songs come in through Apple Music, with Spotify support added later. I'm glad I went React Native: putting it on the Google Play Store is now an easy decision instead of a rewrite.
+**A moment is a song plus whatever you want to remember.** You can add a note, photos, moods, the people you were with, a place and a date. The app fills in the time of day and the weather. Songs come from Apple Music, with Spotify added later.
 
-My favorite feature is the share extension. You can log a song straight from the Music app, or start from a photo in the Photos app, without opening Soundtracks first. Cutting the friction of capture has been the goal the whole way through.
+**Capture has to be nearly free.** Memories fade fast, so the goal the whole way through has been cutting the steps between "this song means something" and having it saved. My favorite feature is the share extension: you can log a song straight from the Music app, or start from a photo in the Photos app, without opening Soundtracks first. A home screen widget does the same from anywhere on the phone.
 
-How I built it mattered as much as what I built. I kept pushing to see how much I could automate:
+**Logging is the investment; getting it back is the payoff.** The Rediscover tab and notifications bring old moments back: On This Day, A Month Ago, a weekly rewind and a random memory now and then.
 
-- **Planning:** Claude helped with scaffolding, compared tech stacks with me, and sharpened my feature ideas. I practiced turning features into PRDs, splitting those into slices, and handing the slices to Claude to build.
-- **Running agents:** I ran agents in parallel, set up loops, and tried orchestrator/sub-agent setups, including an orchestrator → executor → evaluator split.
-- **Testing:** I practiced test-driven development, plus Maestro and end-to-end tests. The evaluator checks against the tests, then runs end-to-end tests and drives the iPhone simulator to try the new feature and to rerun regressions, so bugs I'd already fixed don't come back.
-- **Design:** Most of the mocks came from Claude Design.
+**Memories are shared with the people who were there.** You can send a moment to a friend, build shared albums, and send a link to someone who doesn't have the app yet.
 
-I also use the app myself and keep refining it from real use.
+The stack is Expo / React Native with Supabase for auth, Postgres and storage. I'm glad I went with React Native: putting it on Google Play is now an easy decision instead of a rewrite.
+
+**How I built it.** Soundtracks was also where I practiced building with Claude Code. I turned features into PRDs, split those into slices, and ran them through an orchestrator → executor → evaluator setup. The evaluator checks the tests, then drives the iPhone simulator with Maestro end-to-end tests to try the new feature and rerun old regressions. That caught bugs unit tests never would have. In one, song search dropped keystrokes under load: the test typed "Bohemian Rhapsody" and the field ended up with "Bdy," because a re-render was overwriting text the keyboard had already accepted.
 
 ## Evaluation
 
 I don't have polished numbers, and I haven't tried to produce them. What I can say:
 
-- **People find it.** They download it and use it pretty often.
-- **Activation works.** New users create a first few moments. The onboarding offers a quick capture and a longer one that shows how deep the app can go, and I think it's well done.
-- **Retention doesn't work yet.** Most people don't stay. That's the problem I'm working on now (see below).
-- **Simulator and end-to-end testing paid off.** It caught a lot that unit tests never could, especially in the friend features.
+- **People find it and try it.**
+- **Activation works.** New users log their first few moments. Onboarding offers a quick capture, or a longer one that shows how much a moment can hold.
+- **Retention doesn't work yet.** Most people don't stay.
+- **End-to-end testing paid off,** especially in the friend features, where most bugs only showed up across accounts and screens.
 
 ## What failed
 
-Retention. The first session works, but the app doesn't yet give people a reason to come back. A journal depends on the user remembering to open it, and that isn't enough.
+Retention. The resurfacing features only work on what you've already logged. On This Day has nothing to show a new user until a year after their first moment. So in the early weeks, the app asks for the investment and has no payoff to give back yet. Until then, a journal depends on the user remembering to open it, and that isn't enough.
 
 ## What's next
 
-- **Pull in Apple Music listening history.** Look at songs someone played a lot and haven't played in a while, guess which ones might mean something, and send a push notification asking them to log the memory behind it. This turns the app from "remember to open it" into "it reaches out to you."
-- **A home screen widget** for quick capture, to cut friction further.
-- **Back to the loop:** brainstorm with AI, clean up the UI, then run the next round of features through the workflow I've built up.
+Pull in Apple Music listening history. Find songs someone played a lot and hasn't played in a while, guess which ones might mean something, and send a notification asking about the memory behind them. That gives a brand-new user something to rediscover on day one, and turns the app from "remember to open it" into "it reaches out to you."
