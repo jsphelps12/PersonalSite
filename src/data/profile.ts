@@ -1,8 +1,7 @@
 // Josh's "player profile" for the home page.
 //
-// TODO(josh): every rating, role and line of scout-report copy below is a
-// placeholder drafted during the design pass. Replace them with your own
-// honest self-assessment. Ratings are 1–20, Football Manager style.
+// Self-scouted ratings, roles and scout report. Ratings are 1–20, Football
+// Manager style, and more fun than accurate.
 //
 // `evidence` lists the content tags that back a rating up. Posts, projects
 // and takes carrying any of those tags show up as evidence on the home page;
@@ -15,48 +14,60 @@ export interface Attribute {
 }
 
 export const profile = {
-  // Flip to false once the ratings, roles and scout report are really yours.
-  // While true, the home page labels them as placeholders.
-  placeholder: true,
+  // Flip to true to label the ratings, roles and scout report as drafts.
+  placeholder: false,
   name: 'Joshua Phelps',
   position: 'Applied AI Engineer',
   facts: [
     { label: 'Position', value: 'Applied AI' },
     { label: 'Preferred foot', value: 'Python' },
-    { label: 'Club', value: 'joshuaphelps.com' },
-    { label: 'Status', value: 'Scouting applied AI roles' },
+    { label: 'Club', value: 'Utah State' },
+    { label: 'Status', value: 'Building' },
   ],
   // Positions on the mini pitch. x/y are 0–100 across a horizontal pitch,
   // attacking to the right.
   roles: [
     { code: 'ST', label: 'Applied AI', level: 'Natural', x: 86, y: 50 },
-    { code: 'AM', label: 'Soccer analytics', level: 'Accomplished', x: 68, y: 38 },
-    { code: 'DM', label: 'Hot takes', level: 'Unconvincing', x: 36, y: 62 },
+    { code: 'AM', label: 'Product', level: 'Accomplished', x: 68, y: 34 },
+    { code: 'CM', label: 'Software Engineer', level: 'Natural', x: 50, y: 62 },
   ],
   attributes: {
     Technical: [
-      { name: 'Python', rating: 15, evidence: ['python'] },
-      { name: 'Machine Learning', rating: 13, evidence: ['ml'] },
-      { name: 'Evals', rating: 12, evidence: ['evals'] },
+      { name: 'Python', rating: 16, evidence: ['python'] },
+      { name: 'Machine Learning', rating: 15, evidence: ['ml'] },
       { name: 'LLM Apps', rating: 14, evidence: ['llm'] },
-      { name: 'Data Wrangling', rating: 14, evidence: ['data', 'analysis'] },
-      { name: 'Web', rating: 12, evidence: ['astro', 'typescript', 'web'] },
+      { name: 'Agentic Coding', rating: 16, evidence: ['ai-agents'] },
+      { name: 'Evals', rating: 12, evidence: ['evals'] },
+      { name: 'Backend & Systems', rating: 15, evidence: ['fintech'] },
+      { name: 'Web & Mobile', rating: 14, evidence: ['astro', 'typescript', 'web', 'mobile'] },
     ],
     Mental: [
-      { name: 'Decisions', rating: 14, evidence: ['predictions'] },
-      { name: 'Vision', rating: 15, evidence: ['analysis'] },
+      { name: 'Decisions', rating: 16, evidence: ['predictions'] },
+      { name: 'Vision', rating: 17, evidence: ['analysis'] },
+      { name: 'Ownership', rating: 17, evidence: [] },
+      { name: 'Communication', rating: 16, evidence: [] },
+      { name: 'Teamwork', rating: 16, evidence: [] },
       { name: 'Opinions', rating: 19, evidence: ['soccer', 'tech'] },
-      { name: 'Humility', rating: 11, evidence: [] },
-      { name: 'Work Rate', rating: 16, evidence: [] },
+      { name: 'Humility', rating: 13, evidence: [] },
     ],
     Physical: [
       { name: 'Stamina', rating: 16, evidence: ['climbing'] },
       { name: 'Altitude', rating: 15, evidence: ['climbing', 'wyoming'] },
       { name: 'Recovery', rating: 11, evidence: [] },
+      { name: 'Footwork', rating: 8, evidence: [] },
     ],
   } satisfies Record<string, Attribute[]>,
   scoutReport:
-    "Applied AI engineer who'd rather show you the eval than the demo. Builds things to answer questions they actually have, then writes up what broke. Strong opinions on soccer, logged publicly and scored. Known to make a chart out of anything.",
+    "Two-way engineer who's as comfortable owning the product call as writing the code. Thrives in cross-functional teams and can explain a tradeoff to a stakeholder without losing them. Learns new domains fast: went from zero to shipping a regulated money-movement system in three months.",
+  // Career so far, FM transfer-history style. Shown on the About page.
+  history: [
+    { years: '–2026', club: 'BYU', move: 'Academy graduate' },
+    { years: '2024', club: 'Cadence Design Systems', move: 'Loan' },
+    { years: '2024–25', club: 'CompliRent', move: 'Co-founder' },
+    { years: '2025', club: 'Amazon', move: 'Loan' },
+    { years: '2026', club: 'Puente Financial', move: 'Co-founder' },
+    { years: '2026–', club: 'Utah State', move: 'Transfer (MS, May 2027)' },
+  ],
 };
 
 export function band(rating: number) {

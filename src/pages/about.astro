@@ -1,13 +1,67 @@
 ---
 import Base from '../layouts/Base.astro';
+import Panel from '../components/Panel.astro';
+import { profile } from '../data/profile';
 ---
 
-<Base title="About">
+<Base title="About" description="Applied AI engineer finishing a CS master's at Utah State.">
   <div class="column">
     <h1 class="page-title">About</h1>
     <div class="prose">
-      <p>TODO: write this in your own voice. Who you are, what you're into, what you're looking for.</p>
-      <p>Find me on <a href="https://github.com/jsphelps12">GitHub</a>, or read my <a href="/resume.pdf">resume</a>.</p>
+      <p>
+        I'm an applied AI engineer finishing a CS master's at Utah State. I like owning problems end to end,
+        from the product call to the code, and I'm happiest building with smart people at the edge of what's
+        possible.
+      </p>
+
+      <h2>How I work</h2>
+      <p>
+        I love cross-functional teams. I do my best work when I own the problem: making the technical and
+        product decisions, and explaining them to the people they affect. Most recently that meant co-founding <a href="/projects/puente">Puente</a>, where I built a credit-building remittance app that moved real
+        money to Mexico. Before that, I interned at Amazon and Cadence, and was technical co-founder of CompliRent, a startup in BYU's incubator.
+      </p>
+
+      <h2>What I'm looking for</h2>
+      <p>
+        Roles where I'm surrounded by smart people, building the future today, on the frontier of the
+        technology. I finish my MS in May 2027.
+      </p>
+
+      <h2>Off the clock</h2>
+      <p>
+        Climbing <a href="/writing/seventeen-hours-on-the-grand">big mountains</a>, arguing about soccer,
+        building <a href="/projects/soundtracks">an app for the memories tied to songs</a>, learning Latin
+        dancing, and trying to cook a genuinely good steak.
+      </p>
+    </div>
+
+    <Panel title="Transfer history" class="history">
+      <table>
+        <thead>
+          <tr>
+            <th class="label" scope="col">Years</th>
+            <th class="label" scope="col">Club</th>
+            <th class="label" scope="col">Move</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            profile.history.map((h) => (
+              <tr>
+                <td class="num">{h.years}</td>
+                <td>{h.club}</td>
+                <td class="move">{h.move}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </Panel>
+
+    <div class="prose">
+      <p>
+        Email me at <a href="mailto:jsphelps12@gmail.com">jsphelps12@gmail.com</a>, find me on <a href="https://github.com/jsphelps12">GitHub</a> or <a href="https://www.linkedin.com/in/joshua-s-phelps">LinkedIn</a>, or read my <a href="/resume.pdf">resume</a>.
+      </p>
     </div>
   </div>
 </Base>
@@ -16,5 +70,31 @@ import Base from '../layouts/Base.astro';
   .column {
     max-width: var(--measure);
     margin: 0 auto;
+  }
+  .column :global(.history) {
+    margin: var(--space-6) 0 var(--space-4);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th {
+    text-align: left;
+    padding: 0 var(--space-3) var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: var(--space-2) var(--space-3) var(--space-2) 0;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  .num {
+    white-space: nowrap;
+  }
+  .move {
+    color: var(--muted);
   }
 </style>
